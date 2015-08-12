@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        jar="/home/anna/workspace/ToolboxSettings/app/build/intermediates/exploded-aar/com.android.support/support-v4/21.0.0/jars/libs/internal_impl-21.0.0.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="1609e6d42d0480b0f4188e2c29f75388fa12a8f0">
+        <dex dex="/home/anna/workspace/ToolboxSettings/app/build/intermediates/pre-dexed/debug/internal_impl-21.0.0-b8e8e1518c6fcbe4642da806854dc7e73c8ce72d.jar" />
+    </item>
+    <item
+        jar="/home/anna/workspace/ToolboxSettings/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/21.0.0/jars/classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="95fd37732ec852e99f07eeb516a3650172f1d136">
+        <dex dex="/home/anna/workspace/ToolboxSettings/app/build/intermediates/pre-dexed/debug/classes-1bd0c22221ceee70fd27f0a5eb5fff0c2d56849b.jar" />
+    </item>
+    <item
+        jar="/home/anna/android adt/sdk/extras/android/m2repository/com/android/support/support-annotations/21.0.0/support-annotations-21.0.0.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="1a578b9607b36266c63d43a4fa0ab5664dbe911e">
+        <dex dex="/home/anna/workspace/ToolboxSettings/app/build/intermediates/pre-dexed/debug/support-annotations-21.0.0-bfd02c805a6fa06585869420f0f15193f004e132.jar" />
+    </item>
+    <item
+        jar="/home/anna/workspace/ToolboxSettings/app/build/intermediates/exploded-aar/com.android.support/support-v4/21.0.0/jars/classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="686344a780033e4ba22b926cd225f8d4941247e6">
+        <dex dex="/home/anna/workspace/ToolboxSettings/app/build/intermediates/pre-dexed/debug/classes-abaa0ce39c6ddea13a6ddcce6beda3747da3e2d5.jar" />
+    </item>
+
+</items>
