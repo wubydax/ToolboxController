@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Toolbox</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string-array name="default_titles">
+        <item>S Finder</item>
+        <item>Quick Connect</item>
+        <item>Torch Light</item>
+        <item>Screen Write</item>
+        <item>Magnifier</item>
+    </string-array>
+    <string-array name="default_summaries">
+        <item>Open S Finder</item>
+        <item>Open Quick Connect</item>
+        <item>Turn Torch on/off</item>
+        <item>Take screenshot and open in editor</item>
+        <item>Magnify objects on the screen</item>
+    </string-array>
+    <string name="title_activity_sort">Sort Apps</string>
+    <string name="max_reached_toast">Max toolbox app number (12) is reached</string>
+</resources>

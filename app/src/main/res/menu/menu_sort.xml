@@ -1,0 +1,8 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.wubydax.toolboxsettings.SortActivity">
+    <item
+        android:id="@+id/save"
+        android:title="save"
+        android:showAsAction="always"/>
+</menu>
