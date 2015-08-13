@@ -18,6 +18,8 @@
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="com.samsung.TOOLBOX_LIST" />
                 <action android:name="com.samsung.TOOLBOX_MENU" />
+                <action android:name="android.settings.TOOLBOX_LIST" />
+                <action android:name="android.settings.TOOLBOX_MENU" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
