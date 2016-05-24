@@ -13,29 +13,29 @@
         android:padding="7dp">
 
 
-        <ImageView
-            android:id="@+id/appIcon"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"
-            android:padding="7dp"
-            android:src="@mipmap/ic_launcher" />
-
         <CheckBox
             android:id="@+id/appCheckbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
+            android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
             android:layout_marginEnd="10dp" />
+
+        <ImageView
+            android:id="@+id/appIcon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_toEndOf="@id/appCheckbox"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="7dp"
+            android:src="@mipmap/ic_launcher" />
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_toEndOf="@+id/appIcon"
-            android:layout_toStartOf="@id/appCheckbox">
+            android:layout_toEndOf="@id/appIcon"
+            >
 
 
             <TextView

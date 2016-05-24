@@ -1,5 +1,6 @@
 package com.wubydax.toolboxsettings;
 
+import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -40,24 +41,21 @@ import java.util.List;
 
 public class SortActivity extends Activity {
     private ContentResolver cr;
-    private String dbApps;
     private String[] packageNames;
-    private List<SortedItems> list;
     private List<String> stringsList;
-    private DragSortListView lv;
-    private TextView noAppsText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sort);
         ActionBar ab = getActionBar();
+        assert ab != null;
         ab.setDisplayHomeAsUpEnabled(true);
-        lv = (DragSortListView) findViewById(R.id.listViewSort);
-        noAppsText = (TextView) findViewById(R.id.noAppsText);
+        DragSortListView lv = (DragSortListView) findViewById(R.id.listViewSort);
+        TextView noAppsText = (TextView) findViewById(R.id.noAppsText);
         cr = getContentResolver();
         //Retrieving the string containing the info for the selected apps
-        dbApps = Settings.System.getString(cr, "toolbox_apps");
+        String dbApps = Settings.System.getString(cr, "toolbox_apps");
         //If string is null or is "", we show empty screen with text informing the user, that the toolbox is empty
         if (dbApps != null && !dbApps.equals("")) {
             packageNames = dbApps.split(";");
@@ -66,7 +64,7 @@ public class SortActivity extends Activity {
             noAppsText.setVisibility(View.VISIBLE);
         }
         stringsList = new ArrayList<>();
-        list = listItems();
+        List<SortedItems> list = listItems();
         SortableItemsAdapter adapter = new SortableItemsAdapter(list);
         lv.setDropListener(adapter);
         SectionController sc = new SectionController(lv, adapter);
@@ -131,44 +129,6 @@ public class SortActivity extends Activity {
         return list;
     }
 
-    /*
-    SectionController class extends the drag scroll controller which
-    allows us to handle the floating view while dragging and dropping the list items
-     */
-    private class SectionController extends DragSortController {
-
-        private SortableItemsAdapter mAdapter;
-        DragSortListView mDslv;
-
-        public SectionController(DragSortListView dslv, SortableItemsAdapter adapter) {
-            super(dslv);
-            setRemoveEnabled(false);
-            mDslv = dslv;
-            mAdapter = adapter;
-        }
-
-        @Override
-        public void setDragHandleId(int id) {
-            super.setDragHandleId(id);
-        }
-
-
-        @Override
-        public View onCreateFloatView(int position) {
-
-            View v = mAdapter.getView(position, null, mDslv);
-
-            return v;
-        }
-
-
-        @Override
-        public void onDestroyFloatView(View floatView) {
-            //do nothing; block super from crashing
-        }
-
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -188,7 +148,7 @@ public class SortActivity extends Activity {
             if (stringsList.size() > 0) {
                 StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < stringsList.size(); i++) {
-                    sb.append(stringsList.get(i) + ";");
+                    sb.append(stringsList.get(i)).append(";");
                 }
                 Settings.System.putString(cr, "toolbox_apps", sb.toString());
                 return true;
@@ -196,6 +156,42 @@ public class SortActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    /*
+    SectionController class extends the drag scroll controller which
+    allows us to handle the floating view while dragging and dropping the list items
+     */
+    private class SectionController extends DragSortController {
+
+        DragSortListView mDslv;
+        private SortableItemsAdapter mAdapter;
+
+        public SectionController(DragSortListView dslv, SortableItemsAdapter adapter) {
+            super(dslv);
+            setRemoveEnabled(false);
+            mDslv = dslv;
+            mAdapter = adapter;
+        }
+
+        @Override
+        public void setDragHandleId(int id) {
+            super.setDragHandleId(id);
+        }
+
+
+        @Override
+        public View onCreateFloatView(int position) {
+
+            return mAdapter.getView(position, null, mDslv);
+        }
+
+
+        @Override
+        public void onDestroyFloatView(View floatView) {
+            //do nothing; block super from crashing
+        }
+
     }
 
     //Class that provides an object for each item on list view
@@ -211,12 +207,12 @@ public class SortActivity extends Activity {
             return appIcon;
         }
 
-        public void setLabel(String label) {
-            appName = label;
-        }
-
         public void setIcon(Drawable dr) {
             appIcon = dr;
+        }
+
+        public void setLabel(String label) {
+            appName = label;
         }
     }
 
@@ -252,11 +248,6 @@ public class SortActivity extends Activity {
             return position > mDivPos ? position - 1 : position;
         }
 
-        private class ViewHolder {
-            public TextView label;
-            public ImageView icon;
-        }
-
         @Override
         public int getCount() {
             return ls.size();
@@ -272,6 +263,7 @@ public class SortActivity extends Activity {
             return 0;
         }
 
+        @SuppressLint("InflateParams")
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             if (convertView == null) {
@@ -287,6 +279,11 @@ public class SortActivity extends Activity {
             holder.icon.setImageDrawable(si.getIcon());
             holder.label.setText(si.getAppName());
             return convertView;
+        }
+
+        private class ViewHolder {
+            public TextView label;
+            public ImageView icon;
         }
     }
 }

@@ -1,10 +1,10 @@
 package com.wubydax.toolboxsettings;
 
+import android.annotation.SuppressLint;
 import android.app.ListActivity;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.database.ContentObserver;
@@ -12,6 +12,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -50,12 +51,11 @@ import java.util.Set;
         along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 public class ToolboxSettings extends ListActivity {
+    private static final String LOG_TAG = ToolboxSettings.class.getName();
     private ListView appList;
     private BaseAdapter adapter;
-    private PackageManager pm;
     private ProgressBar pb;
     private ContentResolver cr;
-    private StringBuilder sb;
     private List<String> appInfoList;
     private boolean[] mAppChecked;
 
@@ -66,7 +66,6 @@ public class ToolboxSettings extends ListActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_toolbox_settings);
-        pm = getPackageManager();
         cr = getContentResolver();
         appList = getListView();
         pb = (ProgressBar) findViewById(R.id.progressBar);
@@ -83,25 +82,26 @@ public class ToolboxSettings extends ListActivity {
     }
 
     /*
-    Creates list of ApplicationInfo objects for all apps installed and visible in launcher
+    Creates list of AppInfo objects for all apps installed and visible in launcher
     the list is being passed on tot he adapter to be used as one of 2 lists (second)
      */
-    private List<ApplicationInfo> createAppList() {
-        ArrayList<ApplicationInfo> appList = new ArrayList<>();
-        List<ApplicationInfo> list = pm.getInstalledApplications(PackageManager.GET_META_DATA);
-        int l = list.size();
 
-        for (int i = 0; i < l; i++) {
-            try {
-                if (pm.getLaunchIntentForPackage(list.get(i).packageName) != null) {
-                    appList.add(list.get(i));
-                }
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
+
+    private List<AppInfo> getAppList() {
+        PackageManager pm = getPackageManager();
+        List<AppInfo> list = new ArrayList<>();
+        Intent intent = new Intent(Intent.ACTION_MAIN, null);
+        intent.addCategory(Intent.CATEGORY_LAUNCHER);
+        List<ResolveInfo> resolveInfoList = pm.queryIntentActivities(intent, 0);
+        for (ResolveInfo resolveInfo : resolveInfoList) {
+            AppInfo appInfo = new AppInfo();
+            appInfo.appIcon = resolveInfo.activityInfo.loadIcon(pm);
+            appInfo.appLabel = resolveInfo.loadLabel(pm).toString();
+            appInfo.appPackage = resolveInfo.activityInfo.packageName;
+            appInfo.activityName = resolveInfo.activityInfo.name;
+            list.add(appInfo);
         }
-        return appList;
-
+        return list;
     }
 
     @Override
@@ -111,7 +111,7 @@ public class ToolboxSettings extends ListActivity {
         //Handles the ActionBar switch action in regard of turning the toolbox service on/off
         Switch s = (Switch) menu.findItem(R.id.myswitch).getActionView().findViewById(R.id.switchForActionBar);
         int dbOnOff = Settings.System.getInt(cr, "toolbox_onoff", 0);
-        boolean isOn = (dbOnOff == 0) ? false : true;
+        boolean isOn = dbOnOff != 0;
         if (isOn) {
             s.setChecked(true);
         } else {
@@ -142,12 +142,13 @@ public class ToolboxSettings extends ListActivity {
         int id = item.getItemId();
         if (id == R.id.save) {
             if (appInfoList.size() > 0) {
-                sb = new StringBuilder();
+                StringBuilder sb = new StringBuilder();
 
                 for (int i = 0; i < appInfoList.size(); i++) {
                     sb.append(appInfoList.get(i));
                 }
                 Settings.System.putString(cr, "toolbox_apps", sb.toString());
+                Log.d(LOG_TAG, "onOptionsItemSelected " + sb.toString());
             } else {
                 Settings.System.putString(cr, "toolbox_apps", null);
             }
@@ -158,20 +159,90 @@ public class ToolboxSettings extends ListActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    //Returns boolean fo whether the number of chosen apps exceeded 12
+    //For stock dpi more than 12 apps create toolbox out of screen bounds when opened
+    //Stock number of apps is 5. You need to apply modifications to framework.jar
+    //in order to increase the mas size to 12 apps. If you don't, the toolbox will be cut midst 6th item
+    private boolean isMax(int counter) {
+        boolean isExceeded = false;
+        if (counter >= 12) {
+            isExceeded = true;
+        }
+        return isExceeded;
+    }
+
+    //Creating the list on the background thread, so not to block ui thread
+    private void createList() {
+        new AsyncTask<Void, Void, Void>() {
+            List<AppInfo> appInfoList;
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                pb.setVisibility(View.VISIBLE);
+                pb.refreshDrawableState();
+            }
+
+            @Override
+            protected Void doInBackground(Void... params) {
+                appInfoList = getAppList();
+                Collections.sort(appInfoList, new Comparator<AppInfo>() {
+
+                    @Override
+                    public int compare(AppInfo lhs, AppInfo rhs) {
+                        return String.CASE_INSENSITIVE_ORDER.compare(lhs.appLabel, rhs.appLabel);
+                    }
+                });
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                pb.setVisibility(View.GONE);
+                adapter = new AppListAdapter(appInfoList);
+                appList.setAdapter(adapter);
+                for (boolean aMAppChecked : mAppChecked) {
+                    if (aMAppChecked) {
+                        cbCounter++;
+                    }
+                }
+                showToast(cbCounter);
+            }
+        }.execute();
+    }
+
+    //Shows toast informing the user of the number of apps selected
+    //When selected checkboxes number reaches 12, shows toast informing the user that no more apps may be added
+    private void showToast(int counter) {
+        LayoutInflater inf = getLayoutInflater();
+        @SuppressLint("InflateParams") View toast = inf.inflate(R.layout.toast, null);
+        TextView tv = (TextView) toast.findViewById(R.id.numberApp);
+        if (counter <= 12) {
+            tv.setText(String.format("%s/12", String.valueOf(counter)));
+        } else {
+            tv.setText(R.string.max_reached_toast);
+        }
+        Toast countToast = new Toast(this);
+        countToast.setView(toast);
+        countToast.setDuration(Toast.LENGTH_SHORT);
+        countToast.show();
+    }
+
     //Basic list adapter with section indexer to display the main toolbox apps choosing content
     private class AppListAdapter extends BaseAdapter implements SectionIndexer {
 
-        List<ApplicationInfo> mAppList;
-        List<DefaultItem> defaults;
+        List<AppInfo> mAppList;
+        List<DefaultItem> mDefaultsList;
         Context c;
         private HashMap<String, Integer> alphaIndexer;
         private String[] sections;
 
-        public AppListAdapter(List<ApplicationInfo> appList) {
+        public AppListAdapter(List<AppInfo> appList) {
             c = ToolboxSettings.this;
             this.mAppList = appList;
-            defaults = defaultsList(); //makes the list for samsung default toolbox items, such as torch, magnifier and so on
-            mAppChecked = new boolean[appList.size() + defaults.size()];
+            mDefaultsList = defaultsList(); //makes the list for samsung default toolbox items, such as torch, magnifier and so on
+            mAppChecked = new boolean[appList.size() + mDefaultsList.size()];
 
             /*
             Retrieves string with toolbox active items info from settings db
@@ -180,31 +251,31 @@ public class ToolboxSettings extends ListActivity {
             String dbData = Settings.System.getString(cr, "toolbox_apps");
             if (dbData != null && !dbData.equals("")) {
 
-                String[] a = dbData.split(";");
-                for (int i = 0; i < a.length; i++) {
-                    String newa = a[i].substring(0, a[i].lastIndexOf("/"));
-                    appInfoList.add(a[i] + ";");
+                String[] stringsArray = dbData.split(";");
+                for (String singleApp : stringsArray) {
+                    String substring = singleApp.substring(0, singleApp.lastIndexOf("/"));
+                    appInfoList.add(singleApp + ";");
 
 
-                    if (newa.equals("S Finder")) {
+                    if (substring.equals("S Finder")) {
                         mAppChecked[0] = true;
                     }
-                    if (newa.equals("Quick connect")) {
+                    if (substring.equals("Quick connect")) {
                         mAppChecked[1] = true;
                     }
-                    if (newa.equals("Torch")) {
+                    if (substring.equals("Torch")) {
                         mAppChecked[2] = true;
                     }
-                    if (newa.equals("Screen write")) {
+                    if (substring.equals("Screen write")) {
                         mAppChecked[3] = true;
                     }
-                    if (newa.equals("Magnifier")) {
+                    if (substring.equals("Magnifier")) {
                         mAppChecked[4] = true;
                     }
 
 
                     for (int k = 0; k < appList.size(); k++) {
-                        if (newa.equals(appList.get(k).packageName)) {
+                        if (substring.equals(appList.get(k).appPackage)) {
                             mAppChecked[k + 5] = true;
                         }
                     }
@@ -212,16 +283,16 @@ public class ToolboxSettings extends ListActivity {
 
             }
             //adding Indexer to display the first letter of an app while using fast scroll
-            alphaIndexer = new HashMap<String, Integer>();
+            alphaIndexer = new HashMap<>();
             for (int i = 0; i < mAppList.size(); i++) {
-                String s = mAppList.get(i).loadLabel(getPackageManager()).toString();
+                String s = mAppList.get(i).appLabel;
                 String s1 = s.substring(0, 1).toUpperCase();
                 if (!alphaIndexer.containsKey(s1))
                     alphaIndexer.put(s1, i);
             }
 
             Set<String> sectionLetters = alphaIndexer.keySet();
-            ArrayList<String> sectionList = new ArrayList<String>(sectionLetters);
+            ArrayList<String> sectionList = new ArrayList<>(sectionLetters);
             Collections.sort(sectionList);
             sections = new String[sectionList.size()];
             for (int i = 0; i < sectionList.size(); i++)
@@ -272,25 +343,16 @@ public class ToolboxSettings extends ListActivity {
             return defaultsList;
         }
 
-
-        private class ViewHolder {
-            public TextView mAppNames;
-            public TextView mAppPackage;
-            public ImageView mAppIcon;
-            public CheckBox mAppSelected;
-        }
-
-
         @Override
         public int getCount() {
             if (mAppList != null) {
-                return mAppList.size() + defaults.size();
+                return mAppList.size() + mDefaultsList.size();
             }
             return 0;
         }
 
         @Override
-        public ApplicationInfo getItem(int position) {
+        public AppInfo getItem(int position) {
             if (mAppList != null) {
                 return mAppList.get(position);
             }
@@ -301,7 +363,6 @@ public class ToolboxSettings extends ListActivity {
         public long getItemId(int position) {
             return 0;
         }
-
 
         @Override
         public View getView(final int position, View convertView, ViewGroup parent) {
@@ -318,11 +379,12 @@ public class ToolboxSettings extends ListActivity {
             final ViewHolder holder = (ViewHolder) convertView.getTag();
             DefaultItem defaultItem = null;
             if (position < 5) {
-                defaultItem = defaults.get(position);
+                defaultItem = mDefaultsList.get(position);
             }
 
             if (position >= 0 && position < 5) {
                 //Will handle the adapter for the default samsung items (first 5 positions)
+                assert defaultItem != null;
                 holder.mAppNames.setText(defaultItem.getName());
                 holder.mAppPackage.setText(defaultItem.getDescription());
                 holder.mAppIcon.setImageResource(defaultItem.getIcon());
@@ -376,25 +438,25 @@ public class ToolboxSettings extends ListActivity {
 
             } else {
                 //Will handle the adapter for the application info list (positions 5+ in the list view)
-                final ApplicationInfo applicationInfo = mAppList.get(position - 5);
+                final AppInfo applicationInfo = mAppList.get(position - 5);
 
 
-                holder.mAppNames.setText(applicationInfo.loadLabel(pm));
-                holder.mAppPackage.setText(applicationInfo.packageName);
-                holder.mAppIcon.setImageDrawable(applicationInfo.loadIcon(pm));
+                holder.mAppNames.setText(applicationInfo.appLabel);
+                holder.mAppPackage.setText(applicationInfo.appPackage);
+                holder.mAppIcon.setImageDrawable(applicationInfo.appIcon);
                 holder.mAppSelected.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         holder.mAppSelected = (CheckBox) v;
-                        ApplicationInfo applicationInfo = null;
+                        AppInfo applicationInfo = null;
                         if (position > 4) {
                             applicationInfo = mAppList.get(position - 5);
                         }
-                        Intent intent = pm.getLaunchIntentForPackage(applicationInfo.packageName);
-                        ResolveInfo ri = pm.resolveActivity(intent, 0);
-                        String activityName = ri.activityInfo.name;
-                        String fullEntryForApp = applicationInfo.packageName + "/" + activityName + ";";
-                        ;
+
+                        assert applicationInfo != null;
+                        String activityName = applicationInfo.activityName;
+                        String fullEntryForApp = applicationInfo.appPackage + "/" + activityName + ";";
+
 
                         if (((CheckBox) v).isChecked()) {
                             if (!isMax(cbCounter)) {
@@ -431,59 +493,13 @@ public class ToolboxSettings extends ListActivity {
 
             return convertView;
         }
-    }
 
-    //Returns boolean fo whether the number of chosen apps exceeded 12
-    //For stock dpi more than 12 apps create toolbox out of screen bounds when opened
-    //Stock number of apps is 5. You need to apply modifications to framework.jar
-    //in order to increase the mas size to 12 apps. If you don't, the toolbox will be cut midst 6th item
-    private boolean isMax(int counter) {
-        boolean isExceeded = false;
-        if (counter >= 12) {
-            isExceeded = true;
+        private class ViewHolder {
+            public TextView mAppNames;
+            public TextView mAppPackage;
+            public ImageView mAppIcon;
+            public CheckBox mAppSelected;
         }
-        return isExceeded;
-    }
-
-    //Creating the list on the background thread, so not to block ui thread
-    private void createList() {
-        new AsyncTask<Void, Void, Void>() {
-            List appInfoList;
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                pb.setVisibility(View.VISIBLE);
-                pb.refreshDrawableState();
-            }
-
-            @Override
-            protected Void doInBackground(Void... params) {
-                appInfoList = createAppList();
-                Collections.sort(appInfoList, new Comparator<ApplicationInfo>() {
-
-                    @Override
-                    public int compare(ApplicationInfo lhs, ApplicationInfo rhs) {
-                        return String.CASE_INSENSITIVE_ORDER.compare(lhs.loadLabel(pm).toString(), rhs.loadLabel(pm).toString());
-                    }
-                });
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void aVoid) {
-                super.onPostExecute(aVoid);
-                pb.setVisibility(View.GONE);
-                adapter = new AppListAdapter(appInfoList);
-                appList.setAdapter(adapter);
-                for (int i = 0; i < mAppChecked.length; i++) {
-                    if (mAppChecked[i]) {
-                        cbCounter++;
-                    }
-                }
-                showToast(cbCounter);
-            }
-        }.execute();
     }
 
     //Settings Observer class to coordinate the Actionbar switch with the externally applied changes to settings db
@@ -505,7 +521,7 @@ public class ToolboxSettings extends ListActivity {
         public void onChange(boolean selfChange) {
             super.onChange(selfChange);
             int isOnOff = Settings.System.getInt(cr, "toolbox_onoff", 0);
-            boolean isOn = (isOnOff == 1) ? true : false;
+            boolean isOn = (isOnOff == 1);
             if (isOn) {
                 toolboxSwitch.setChecked(true);
             } else {
@@ -513,23 +529,6 @@ public class ToolboxSettings extends ListActivity {
             }
         }
 
-    }
-
-    //Shows toast informing the user of the number of apps selected
-    //When selected checkboxes number reaches 12, shows toast informing the user that no more apps may be added
-    private void showToast(int counter) {
-        LayoutInflater inf = getLayoutInflater();
-        View toast = inf.inflate(R.layout.toast, null);
-        TextView tv = (TextView) toast.findViewById(R.id.numberApp);
-        if (counter <= 12) {
-            tv.setText(String.valueOf(counter) + "/12");
-        } else {
-            tv.setText(R.string.max_reached_toast);
-        }
-        Toast countToast = new Toast(this);
-        countToast.setView(toast);
-        countToast.setDuration(Toast.LENGTH_SHORT);
-        countToast.show();
     }
 
 

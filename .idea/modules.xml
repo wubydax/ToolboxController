@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/ToolboxSettings.iml" filepath="$PROJECT_DIR$/ToolboxSettings.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ToolboxController.iml" filepath="$PROJECT_DIR$/ToolboxController.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
