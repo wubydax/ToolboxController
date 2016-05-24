@@ -2,32 +2,88 @@
 <items version="2" >
 
     <item
-        jar="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\exploded-aar\com.android.support\support-v4\21.0.0\jars\classes.jar"
+        jar="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\exploded-aar\com.android.support\support-vector-drawable\23.4.0\jars\classes.jar"
         jumboMode="false"
-        revision="21.1.2"
-        sha1="686344a780033e4ba22b926cd225f8d4941247e6">
-        <dex dex="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\pre-dexed\debug\com.android.support-support-v4-21.0.0_92dc6e17fbb377be026a801b008042c6d89abb46.jar" />
+        revision="23.0.3"
+        sha1="c2c594cace5d83a3227b2b6e658ecbfd586d3ed9">
+        <dex dex="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\pre-dexed\release\com.android.support-support-vector-drawable-23.4.0_6be999b969177a1a6b874a278f161702520f1a06.jar" />
     </item>
     <item
-        jar="C:\Users\Anna\AppData\Local\Android\sdk\extras\android\m2repository\com\android\support\support-annotations\21.0.0\support-annotations-21.0.0.jar"
+        jar="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\exploded-aar\com.android.support\support-vector-drawable\23.4.0\jars\classes.jar"
         jumboMode="false"
         revision="21.1.2"
-        sha1="1a578b9607b36266c63d43a4fa0ab5664dbe911e">
-        <dex dex="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\pre-dexed\debug\support-annotations-21.0.0_3e0ae3ac9043fbf11d574177cb68f55ee4283c79.jar" />
+        sha1="c2c594cace5d83a3227b2b6e658ecbfd586d3ed9">
+        <dex dex="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\pre-dexed\release\com.android.support-support-vector-drawable-23.4.0_6be999b969177a1a6b874a278f161702520f1a06.jar" />
     </item>
     <item
-        jar="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\exploded-aar\com.android.support\support-v4\21.0.0\jars\libs\internal_impl-21.0.0.jar"
+        jar="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\exploded-aar\com.android.support\support-v4\23.4.0\jars\classes.jar"
         jumboMode="false"
-        revision="21.1.2"
-        sha1="1609e6d42d0480b0f4188e2c29f75388fa12a8f0">
-        <dex dex="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\pre-dexed\debug\internal_impl-21.0.0_5f0371903fa9131eac504f27ebe8c2bfd59f49bd.jar" />
+        revision="23.0.3"
+        sha1="67bd36ee9340ec7c254108936ad16b24bed160cc">
+        <dex dex="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\pre-dexed\release\com.android.support-support-v4-23.4.0_8181cebcc9e397b80692c7162f35bbafc5094a75.jar" />
     </item>
     <item
-        jar="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\exploded-aar\com.android.support\appcompat-v7\21.0.0\jars\classes.jar"
+        jar="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\exploded-aar\com.android.support\support-v4\23.4.0\jars\classes.jar"
         jumboMode="false"
         revision="21.1.2"
-        sha1="95fd37732ec852e99f07eeb516a3650172f1d136">
-        <dex dex="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\pre-dexed\debug\com.android.support-appcompat-v7-21.0.0_8f5d163953368aad44a61b74bc911b0e88d56735.jar" />
+        sha1="67bd36ee9340ec7c254108936ad16b24bed160cc">
+        <dex dex="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\pre-dexed\release\com.android.support-support-v4-23.4.0_8181cebcc9e397b80692c7162f35bbafc5094a75.jar" />
+    </item>
+    <item
+        jar="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\exploded-aar\com.android.support\animated-vector-drawable\23.4.0\jars\classes.jar"
+        jumboMode="false"
+        revision="23.0.3"
+        sha1="de4db3785756bfb0915a9f59a9b3f2fea7407be4">
+        <dex dex="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\pre-dexed\release\com.android.support-animated-vector-drawable-23.4.0_88cb73950247bd5a8b89f6a540ebf51903ecfe90.jar" />
+    </item>
+    <item
+        jar="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\exploded-aar\com.android.support\appcompat-v7\23.4.0\jars\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="548f06de403a9409f00554b3ee12a9fdea0e236c">
+        <dex dex="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\pre-dexed\release\com.android.support-appcompat-v7-23.4.0_fd20b1af6d377ef1225ee30f7c258c970e313cec.jar" />
+    </item>
+    <item
+        jar="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\exploded-aar\com.android.support\appcompat-v7\23.4.0\jars\classes.jar"
+        jumboMode="false"
+        revision="23.0.3"
+        sha1="548f06de403a9409f00554b3ee12a9fdea0e236c">
+        <dex dex="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\pre-dexed\release\com.android.support-appcompat-v7-23.4.0_fd20b1af6d377ef1225ee30f7c258c970e313cec.jar" />
+    </item>
+    <item
+        jar="C:\Users\Anna\AppData\Local\Android\sdk\extras\android\m2repository\com\android\support\support-annotations\23.4.0\support-annotations-23.4.0.jar"
+        jumboMode="false"
+        revision="23.0.3"
+        sha1="ffbe55fdb2bb456b1485831706a9eac3300bb6b8">
+        <dex dex="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\pre-dexed\release\support-annotations-23.4.0_dbd62ef53b121c21abb1c9872af9ddb8cb447b77.jar" />
+    </item>
+    <item
+        jar="C:\Users\Anna\AppData\Local\Android\sdk\extras\android\m2repository\com\android\support\support-annotations\23.4.0\support-annotations-23.4.0.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="ffbe55fdb2bb456b1485831706a9eac3300bb6b8">
+        <dex dex="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\pre-dexed\release\support-annotations-23.4.0_dbd62ef53b121c21abb1c9872af9ddb8cb447b77.jar" />
+    </item>
+    <item
+        jar="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\exploded-aar\com.android.support\support-v4\23.4.0\jars\libs\internal_impl-23.4.0.jar"
+        jumboMode="false"
+        revision="23.0.3"
+        sha1="ea3c07504d2c8f4b13aa17c45c1b68ed9c1c3674">
+        <dex dex="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\pre-dexed\release\internal_impl-23.4.0_0f0705598f7b57facee6b1da1cbe00bc2a2b8679.jar" />
+    </item>
+    <item
+        jar="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\exploded-aar\com.android.support\animated-vector-drawable\23.4.0\jars\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="de4db3785756bfb0915a9f59a9b3f2fea7407be4">
+        <dex dex="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\pre-dexed\release\com.android.support-animated-vector-drawable-23.4.0_88cb73950247bd5a8b89f6a540ebf51903ecfe90.jar" />
+    </item>
+    <item
+        jar="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\exploded-aar\com.android.support\support-v4\23.4.0\jars\libs\internal_impl-23.4.0.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="ea3c07504d2c8f4b13aa17c45c1b68ed9c1c3674">
+        <dex dex="C:\Users\Anna\Desktop\ToolboxController\app\build\intermediates\pre-dexed\release\internal_impl-23.4.0_0f0705598f7b57facee6b1da1cbe00bc2a2b8679.jar" />
     </item>
 
 </items>

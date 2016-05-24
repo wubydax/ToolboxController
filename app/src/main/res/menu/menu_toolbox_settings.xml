@@ -1,15 +1,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ToolboxSettings">
 
     <item
         android:id="@+id/sort"
-        android:title="Sort"
+        android:title="@string/sort"
         android:showAsAction="always"/>
     <item
         android:id="@+id/save"
-        android:title="save"
+        android:title="@string/save"
         android:showAsAction="always"/>
     <item
         android:id="@+id/myswitch"

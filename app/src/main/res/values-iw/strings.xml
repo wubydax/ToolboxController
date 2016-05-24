@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ארגז כלים</string>
+    <string name="max_reached_toast">הגעת למספר המירבי של יישומים (12)</string>
+    <string name="save">שמור</string>
+    <string name="sort">מיין</string>
+    <string name="title_activity_sort">מיון יישומים</string>
+    <string-array name="default_titles">
+        <item>יישום S Finder</item>
+        <item>חיבור מהיר</item>
+        <item>פנס</item>
+        <item>כתיבה על מסך</item>
+        <item>זכוכית מגדלת</item>
+    </string-array>
+    <string-array name="default_summaries">
+        <item>פתח S Finder</item>
+        <item>פתח חיבור מהיר</item>
+        <item>הפעל/כבה פנס</item>
+        <item>כתיבה על מסך</item>
+        <item>הגדל פריטים על גבי המסך</item>
+    </string-array>
+</resources>

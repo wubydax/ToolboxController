@@ -2,10 +2,10 @@ package com.wubydax.toolboxsettings.dragscroll;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.support.v4.widget.CursorAdapter;
 import android.util.SparseIntArray;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CursorAdapter;
 
 import java.util.ArrayList;
 
@@ -19,11 +19,7 @@ import java.util.ArrayList;
  * mapping with the {@link #getCursorPositions()} method, which
  * returns the reordered list of Cursor positions.
  *
- * An instance of this class is passed
- * to {@link DragSortListView#setAdapter(ListAdapter)} and, since
- * this class implements the {@link DragSortListView.DragSortListener}
- * interface, it is automatically set as the DragSortListener for
- * the DragSortListView instance.
+
  */
 public abstract class DragSortCursorAdapter extends CursorAdapter implements DragSortListView.DragSortListener {
 
@@ -104,13 +100,7 @@ public abstract class DragSortCursorAdapter extends CursorAdapter implements Dra
         return super.getView(mListMapping.get(position, position), convertView, parent);
     }
 
-    /**
-     * On drop, this updates the mapping between Cursor positions
-     * and ListView positions. The Cursor is unchanged. Retrieve
-     * the current mapping with {@link getCursorPositions()}.
-     *
-     * @see DragSortListView.DropListener#drop(int, int)
-     */
+
     @Override
     public void drop(int from, int to) {
         if (from != to) {
@@ -132,13 +122,7 @@ public abstract class DragSortCursorAdapter extends CursorAdapter implements Dra
         }
     }
 
-    /**
-     * On remove, this updates the mapping between Cursor positions
-     * and ListView positions. The Cursor is unchanged. Retrieve
-     * the current mapping with {@link getCursorPositions()}.
-     *
-     * @see DragSortListView.RemoveListener#remove(int)
-     */
+
     @Override
     public void remove(int which) {
         int cursorPos = mListMapping.get(which, which);
