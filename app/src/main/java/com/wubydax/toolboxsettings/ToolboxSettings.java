@@ -51,25 +51,27 @@ import java.util.Set;
         along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 public class ToolboxSettings extends ListActivity {
+    public static final String TOOLBOX_APPS_KEY = "toolbox_apps";
     private static final String LOG_TAG = ToolboxSettings.class.getName();
     private ListView appList;
     private BaseAdapter adapter;
     private ProgressBar pb;
     private ContentResolver cr;
-    private List<String> appInfoList;
+    private List<String> mAppDataList;
     private boolean[] mAppChecked;
+    private SettingsObserver mSettingsObserver;
 
     private int cbCounter;
+    private AsyncTask<Void, Void, Void> mBuildTask;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_toolbox_settings);
-        cr = getContentResolver();
+        cr = getApplicationContext().getContentResolver();
         appList = getListView();
         pb = (ProgressBar) findViewById(R.id.progressBar);
-        appInfoList = new ArrayList<>();
 
         createList();
         appList.setFastScrollEnabled(true);
@@ -78,7 +80,6 @@ public class ToolboxSettings extends ListActivity {
         appList.setDividerHeight(0);
         appList.setScrollingCacheEnabled(false);
         cbCounter = 0;
-
     }
 
     /*
@@ -87,22 +88,7 @@ public class ToolboxSettings extends ListActivity {
      */
 
 
-    private List<AppInfo> getAppList() {
-        PackageManager pm = getPackageManager();
-        List<AppInfo> list = new ArrayList<>();
-        Intent intent = new Intent(Intent.ACTION_MAIN, null);
-        intent.addCategory(Intent.CATEGORY_LAUNCHER);
-        List<ResolveInfo> resolveInfoList = pm.queryIntentActivities(intent, 0);
-        for (ResolveInfo resolveInfo : resolveInfoList) {
-            AppInfo appInfo = new AppInfo();
-            appInfo.appIcon = resolveInfo.activityInfo.loadIcon(pm);
-            appInfo.appLabel = resolveInfo.loadLabel(pm).toString();
-            appInfo.appPackage = resolveInfo.activityInfo.packageName;
-            appInfo.activityName = resolveInfo.activityInfo.name;
-            list.add(appInfo);
-        }
-        return list;
-    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -129,9 +115,15 @@ public class ToolboxSettings extends ListActivity {
         so that if the toolbox service is turned off from systemui,
         it turns off the switch in the app as well
          */
-        SettingsObserver sb = new SettingsObserver(new Handler(), s);
-        cr.registerContentObserver(android.provider.Settings.System.getUriFor("toolbox_onoff"), true, sb);
+        mSettingsObserver = new SettingsObserver(new Handler(), s);
+        cr.registerContentObserver(android.provider.Settings.System.getUriFor("toolbox_onoff"), true, mSettingsObserver);
         return true;
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        initDataList();
     }
 
     @Override
@@ -141,22 +133,27 @@ public class ToolboxSettings extends ListActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.save) {
-            if (appInfoList.size() > 0) {
-                StringBuilder sb = new StringBuilder();
-
-                for (int i = 0; i < appInfoList.size(); i++) {
-                    sb.append(appInfoList.get(i));
-                }
-                Settings.System.putString(cr, "toolbox_apps", sb.toString());
-                Log.d(LOG_TAG, "onOptionsItemSelected " + sb.toString());
-            } else {
-                Settings.System.putString(cr, "toolbox_apps", null);
-            }
+            saveData();
         } else if (id == R.id.sort) {
+            saveData();
             startActivity(new Intent(this, SortActivity.class));
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void saveData() {
+        if (mAppDataList.size() > 0) {
+            StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < mAppDataList.size(); i++) {
+                sb.append(mAppDataList.get(i));
+            }
+            Settings.System.putString(cr, TOOLBOX_APPS_KEY, sb.toString());
+            Log.d(LOG_TAG, "onOptionsItemSelected " + sb.toString());
+        } else {
+            Settings.System.putString(cr, TOOLBOX_APPS_KEY, null);
+        }
     }
 
     //Returns boolean fo whether the number of chosen apps exceeded 12
@@ -173,8 +170,8 @@ public class ToolboxSettings extends ListActivity {
 
     //Creating the list on the background thread, so not to block ui thread
     private void createList() {
-        new AsyncTask<Void, Void, Void>() {
-            List<AppInfo> appInfoList;
+        mBuildTask = new AsyncTask<Void, Void, Void>() {
+            List<AppInfo> mAppsList;
 
             @Override
             protected void onPreExecute() {
@@ -185,8 +182,8 @@ public class ToolboxSettings extends ListActivity {
 
             @Override
             protected Void doInBackground(Void... params) {
-                appInfoList = getAppList();
-                Collections.sort(appInfoList, new Comparator<AppInfo>() {
+                mAppsList = getAppList();
+                Collections.sort(mAppsList, new Comparator<AppInfo>() {
 
                     @Override
                     public int compare(AppInfo lhs, AppInfo rhs) {
@@ -196,11 +193,41 @@ public class ToolboxSettings extends ListActivity {
                 return null;
             }
 
+            private List<AppInfo> getAppList() {
+                PackageManager pm = getApplicationContext().getPackageManager();
+                List<AppInfo> list = new ArrayList<>();
+                Intent intent = new Intent(Intent.ACTION_MAIN, null);
+                intent.addCategory(Intent.CATEGORY_LAUNCHER);
+                List<ResolveInfo> resolveInfoList = pm.queryIntentActivities(intent, 0);
+                for (ResolveInfo resolveInfo : resolveInfoList) {
+                    if(!isCancelled()) {
+                        try {
+                            AppInfo appInfo = new AppInfo();
+                            appInfo.appIcon = resolveInfo.activityInfo.loadIcon(pm);
+                            appInfo.appLabel = resolveInfo.loadLabel(pm).toString();
+                            appInfo.appPackage = resolveInfo.activityInfo.packageName;
+                            appInfo.activityName = resolveInfo.activityInfo.name;
+                            list.add(appInfo);
+                        } catch (NullPointerException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        break;
+                    }
+                }
+                return list;
+            }
+
+            @Override
+            protected void onCancelled() {
+                super.onCancelled();
+            }
+
             @Override
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
                 pb.setVisibility(View.GONE);
-                adapter = new AppListAdapter(appInfoList);
+                adapter = new AppListAdapter(mAppsList);
                 appList.setAdapter(adapter);
                 for (boolean aMAppChecked : mAppChecked) {
                     if (aMAppChecked) {
@@ -248,34 +275,36 @@ public class ToolboxSettings extends ListActivity {
             Retrieves string with toolbox active items info from settings db
             further, we split the string and retrieve data necessary for applying to checkbox state
              */
-            String dbData = Settings.System.getString(cr, "toolbox_apps");
+            initDataList();
+            String dbData = Settings.System.getString(cr, TOOLBOX_APPS_KEY);
             if (dbData != null && !dbData.equals("")) {
 
                 String[] stringsArray = dbData.split(";");
                 for (String singleApp : stringsArray) {
-                    String substring = singleApp.substring(0, singleApp.lastIndexOf("/"));
-                    appInfoList.add(singleApp + ";");
+                    String[] splitDataArray = singleApp.split("/");
+                    String packageName = splitDataArray[0];
+                    String activityName = splitDataArray[1];
 
-
-                    if (substring.equals("S Finder")) {
-                        mAppChecked[0] = true;
+                    switch (packageName) {
+                        case("S Finder"):
+                            mAppChecked[0] = true;
+                            break;
+                        case("Quick connect"):
+                            mAppChecked[1] = true;
+                            break;
+                        case("Torch"):
+                            mAppChecked[2] = true;
+                            break;
+                        case("Screen write"):
+                            mAppChecked[3] = true;
+                            break;
+                        case("Magnifier"):
+                            mAppChecked[4] = true;
+                            break;
                     }
-                    if (substring.equals("Quick connect")) {
-                        mAppChecked[1] = true;
-                    }
-                    if (substring.equals("Torch")) {
-                        mAppChecked[2] = true;
-                    }
-                    if (substring.equals("Screen write")) {
-                        mAppChecked[3] = true;
-                    }
-                    if (substring.equals("Magnifier")) {
-                        mAppChecked[4] = true;
-                    }
-
 
                     for (int k = 0; k < appList.size(); k++) {
-                        if (substring.equals(appList.get(k).appPackage)) {
+                        if (activityName.equals(appList.get(k).activityName)) {
                             mAppChecked[k + 5] = true;
                         }
                     }
@@ -415,7 +444,7 @@ public class ToolboxSettings extends ListActivity {
                             if (!isMax(cbCounter)) {
                                 cbCounter++;
                                 mAppChecked[position] = true;
-                                appInfoList.add(fullEntryForApp);
+                                mAppDataList.add(fullEntryForApp);
                                 showToast(cbCounter);
                             } else {
                                 ((CheckBox) v).setChecked(false);
@@ -424,7 +453,7 @@ public class ToolboxSettings extends ListActivity {
 
                         } else {
                             mAppChecked[position] = false;
-                            appInfoList.remove(fullEntryForApp);
+                            mAppDataList.remove(fullEntryForApp);
                             cbCounter--;
                             showToast(cbCounter);
 
@@ -462,7 +491,7 @@ public class ToolboxSettings extends ListActivity {
                             if (!isMax(cbCounter)) {
                                 cbCounter++;
                                 mAppChecked[position] = true;
-                                appInfoList.add(fullEntryForApp);
+                                mAppDataList.add(fullEntryForApp);
                                 showToast(cbCounter);
                             } else {
                                 ((CheckBox) v).setChecked(false);
@@ -471,7 +500,7 @@ public class ToolboxSettings extends ListActivity {
 
                         } else {
                             mAppChecked[position] = false;
-                            appInfoList.remove(fullEntryForApp);
+                            mAppDataList.remove(fullEntryForApp);
                             cbCounter--;
                             showToast(cbCounter);
 
@@ -484,11 +513,7 @@ public class ToolboxSettings extends ListActivity {
                 holder.mAppSelected.setChecked(mAppChecked[position]);
 
 
-//            if(holder.mAppSelected.isSelected()){
-//                holder.mAppSelected.setChecked(true);
-//            }else{
-//                holder.mAppSelected.setChecked(false);
-//            }
+
             }
 
             return convertView;
@@ -502,17 +527,27 @@ public class ToolboxSettings extends ListActivity {
         }
     }
 
+    private void initDataList() {
+        mAppDataList = new ArrayList<>();
+        String dbData = Settings.System.getString(cr, TOOLBOX_APPS_KEY);
+        if (dbData != null && !dbData.equals("")) {
+
+            String[] stringsArray = dbData.split(";");
+            for (String singleApp : stringsArray) {
+                mAppDataList.add(singleApp + ";");
+            }
+        }
+    }
+
     //Settings Observer class to coordinate the Actionbar switch with the externally applied changes to settings db
     //F.e. if the toolbox is switched off from systemui toggle, it will switch off the switch on the Actionbar
     private class SettingsObserver extends ContentObserver {
 
         Switch toolboxSwitch;
-        Context c;
 
 
         public SettingsObserver(Handler handler, Switch sw) {
             super(handler);
-            c = ToolboxSettings.this;
             toolboxSwitch = sw;
 
         }
@@ -520,7 +555,7 @@ public class ToolboxSettings extends ListActivity {
         @Override
         public void onChange(boolean selfChange) {
             super.onChange(selfChange);
-            int isOnOff = Settings.System.getInt(cr, "toolbox_onoff", 0);
+            int isOnOff = Settings.System.getInt(getApplicationContext().getContentResolver(), "toolbox_onoff", 0);
             boolean isOn = (isOnOff == 1);
             if (isOn) {
                 toolboxSwitch.setChecked(true);
@@ -529,6 +564,20 @@ public class ToolboxSettings extends ListActivity {
             }
         }
 
+    }
+
+    @Override
+    protected void onStop() {
+        cr.unregisterContentObserver(mSettingsObserver);
+        super.onStop();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(mBuildTask != null && mBuildTask.getStatus() == AsyncTask.Status.RUNNING) {
+            mBuildTask.cancel(true);
+        }
+        super.onBackPressed();
     }
 
 

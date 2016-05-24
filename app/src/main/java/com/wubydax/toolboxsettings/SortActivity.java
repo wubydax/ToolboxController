@@ -3,10 +3,14 @@ package com.wubydax.toolboxsettings;
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.ComponentInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -51,11 +55,17 @@ public class SortActivity extends Activity {
         ActionBar ab = getActionBar();
         assert ab != null;
         ab.setDisplayHomeAsUpEnabled(true);
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         DragSortListView lv = (DragSortListView) findViewById(R.id.listViewSort);
         TextView noAppsText = (TextView) findViewById(R.id.noAppsText);
         cr = getContentResolver();
         //Retrieving the string containing the info for the selected apps
-        String dbApps = Settings.System.getString(cr, "toolbox_apps");
+        String dbApps = Settings.System.getString(cr, ToolboxSettings.TOOLBOX_APPS_KEY);
         //If string is null or is "", we show empty screen with text informing the user, that the toolbox is empty
         if (dbApps != null && !dbApps.equals("")) {
             packageNames = dbApps.split(";");
@@ -76,28 +86,35 @@ public class SortActivity extends Activity {
     }
 
     /*
-    Creating the list of SortedItems class objects and populating them with string and drawable
-    in order to use later on in the adapter to display the list of saved apps/items
-    We try to retrieve the ApplicationInfo content from the string, and if an exception si thrown,
-    we catch it and assume that then we're talking about the default samsung items which have
-    different structure of string in settings db. We then go one by one and set the text and the drawable for
-    each one of the default items
-     */
+        Creating the list of SortedItems class objects and populating them with string and drawable
+        in order to use later on in the adapter to display the list of saved apps/items
+        We try to retrieve the ApplicationInfo content from the string, and if an exception si thrown,
+        we catch it and assume that then we're talking about the default samsung items which have
+        different structure of string in settings db. We then go one by one and set the text and the drawable for
+        each one of the default items
+         */
     private List<SortedItems> listItems() {
         List<SortedItems> list = new ArrayList<>();
+        PackageManager packageManager = getPackageManager();
         if (packageNames != null) {
-            for (int i = 0; i < packageNames.length; i++) {
-                stringsList.add(packageNames[i]);
+            for (String string : packageNames) {
+                stringsList.add(string);
                 SortedItems current = new SortedItems();
-                packageNames[i] = packageNames[i].substring(0, packageNames[i].lastIndexOf("/"));
+                String[] dataArray = string.split("/");
+                String packageName = dataArray[0];
+                String activityName = dataArray[1];
                 String label = "";
                 Drawable dr = null;
                 try {
-                    ApplicationInfo ai = getPackageManager().getApplicationInfo(packageNames[i], 0);
-                    label = ai.loadLabel(getPackageManager()).toString();
-                    dr = ai.loadIcon(getPackageManager());
-                } catch (PackageManager.NameNotFoundException e) {
-                    switch (packageNames[i]) {
+                    ComponentName componentInfo = new ComponentName(packageName, activityName);
+                    Intent intent = new Intent();
+                    intent.setComponent(componentInfo);
+                    ResolveInfo resolveInfo = getPackageManager().resolveActivity(intent, 0);
+                    label = resolveInfo.loadLabel(packageManager).toString();
+                    dr = resolveInfo.loadIcon(packageManager);
+                } catch (NullPointerException e) {
+                    string = string.split("/")[0];
+                    switch (string) {
                         case "S Finder":
                             label = "S Finder";
                             dr = getDrawable(R.drawable.toolbox_s_finder);
@@ -150,8 +167,8 @@ public class SortActivity extends Activity {
                 for (int i = 0; i < stringsList.size(); i++) {
                     sb.append(stringsList.get(i)).append(";");
                 }
-                Settings.System.putString(cr, "toolbox_apps", sb.toString());
-                return true;
+                Settings.System.putString(cr, ToolboxSettings.TOOLBOX_APPS_KEY, sb.toString());
+                finish();
             }
         }
 

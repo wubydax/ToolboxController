@@ -4,16 +4,18 @@
 
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
 
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme"
-        >
+        android:largeHeap="true"
+        android:name=".MyApp">
         <activity
             android:name=".ToolboxSettings"
             android:label="@string/app_name"
-            >
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="com.samsung.TOOLBOX_LIST" />
@@ -27,7 +29,8 @@
         <activity
             android:name=".SortActivity"
             android:label="@string/title_activity_sort"
-            android:parentActivityName=".ToolboxSettings">
+            android:parentActivityName=".ToolboxSettings"
+            android:screenOrientation="portrait">
          </activity>
     </application>
 

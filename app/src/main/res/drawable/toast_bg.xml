@@ -5,12 +5,12 @@
 
     <!-- Specify a gradient for the background -->
     <solid
-        android:color="#dd009688"/>
+        android:color="#c7290346"/>
 
     <!-- Specify a dark blue border -->
     <stroke
         android:width="2dp"
-        android:color="#ff00a5c4" />
+        android:color="@color/colorAccent" />
 
 
 
